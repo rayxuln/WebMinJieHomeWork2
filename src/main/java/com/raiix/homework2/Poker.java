@@ -1,7 +1,6 @@
 package com.raiix.homework2;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Poker {
     int[] numberMap;
@@ -25,11 +24,22 @@ public class Poker {
         numberMap['A'] = 13;
     }
 
-    int getNumber(String p){
+    public ArrayList<String> getSortedData(){
+        ArrayList<String> res = new ArrayList<String>(Arrays.asList(data.clone()));
+        res.sort(new Comparator<String>() {
+            @Override
+            public int compare(String s, String t1) {
+                return Integer.compare(getNumber(s), getNumber(t1));
+            }
+        });
+        return res;
+    }
+
+    public int getNumber(String p){
         return numberMap[p.charAt(0)];
     }
 
-    char getColor(String p){
+    public char getColor(String p){
         return p.charAt(1);
     }
 
@@ -57,9 +67,10 @@ public class Poker {
     public boolean isOrderType(){
         boolean isGreater = true;
         boolean isLesser = true;
-        for (int i=0;i<data.length-1;++i){
-            if(!isInGreaterOrder(data[i], data[i+1])) isGreater = false;
-            if(!isInLesserOrder(data[i], data[i+1])) isLesser = false;
+        ArrayList<String> sortedData = getSortedData();
+        for (int i=0;i<sortedData.size()-1;++i){
+            if(!isInGreaterOrder(sortedData.get(i), sortedData.get(i + 1))) isGreater = false;
+            if(!isInLesserOrder(sortedData.get(i), sortedData.get(i + 1))) isLesser = false;
         }
         return isGreater || isLesser;
     }
@@ -79,16 +90,16 @@ public class Poker {
     }
 
     public int countCoupleNum(){
-        HashSet<String> used = new HashSet<>();
+        HashSet<Integer> used = new HashSet<>();
         int coupleCnt = 0;
         for(int i=0;i<data.length;++i){
             for(int j=0;j<data.length;++j){
                 if(i == j) continue;
-                if(used.contains(data[i]) || used.contains(data[j])) continue;
+                if(used.contains(i) || used.contains(j)) continue;
                 if(isSameNumber(data[i], data[j]))
                 {
-                    used.add(data[i]);
-                    used.add(data[j]);
+                    used.add(i);
+                    used.add(j);
                     coupleCnt += 1;
                 }
             }
@@ -110,14 +121,58 @@ public class Poker {
         return isSameType() && isOrderType();
     }
 
-    public String typeString(){
-        if(isSameType()) return "same";
-        if(isOrderType()) return "order";
-        if(isTripleType()) return "triple";
+    public int getTypeLevel(){
+        if (isSameOrderType()) return 6;
+        if (isSameType()) return 5;
+        if (isOrderType()) return 4;
+        if (isTripleType()) return 3;
+        if (isDoubleCouple()) return 2;
+        if (isCouple()) return 1;
+        return 0;
+    }
 
-        int coupleNum = countCoupleNum();
-        if(coupleNum == 1) return "couple";
-        if(coupleNum == 2) return "double couple";
-        return "chaos";
+    public ArrayList<Integer> getCoupleNumber(){
+        ArrayList<String> sortedData = getSortedData();
+        ArrayList<Integer> res = new ArrayList<>();
+
+        HashSet<Integer> used = new HashSet<>();
+        for(int i=0;i<data.length;++i){
+            for(int j=0;j<data.length;++j){
+                if(i == j) continue;
+                if(used.contains(i) || used.contains(j)) continue;
+                if(isSameNumber(data[i], data[j]))
+                {
+                    used.add(i);
+                    used.add(j);
+                    res.add(getNumber(data[i]));
+                }
+            }
+        }
+
+        return res;
+    }
+
+    public int getTripleNumber(){
+        for(int i=0;i<data.length;++i){
+            for(int j=0;j<data.length;++j){
+                for(int k=0;k<data.length;++k){
+                    if(i==j || j==k || i==k) continue;
+                    if(isSameNumber(data[i], data[j]) && isSameNumber(data[j], data[k]) && isSameNumber(data[i], data[k])){
+                        return getNumber(data[i]);
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    public String toString(){
+        StringBuffer sb = new StringBuffer();
+        for(int i=0;i<data.length;++i){
+            sb.append(data[i]);
+            if(i < data.length-1)
+                sb.append(' ');
+        }
+        return sb.toString();
     }
 }
