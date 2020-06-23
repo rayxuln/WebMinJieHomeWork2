@@ -75,7 +75,6 @@ public class PokerComparer {
             case 3:
                 return compareAsTriple();
         }
-
-        return "Tie";
+        return TIE;
     }
 }
